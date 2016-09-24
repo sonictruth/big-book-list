@@ -38,10 +38,13 @@ html, body {
   margin: 0;
   padding: 0;
   background-color: #fafafa;
+  height: 100%;
+  background-image: url("./assets/books.jpg");
+  background-size: cover;
 }
 
 .logo {
-  color: #3f51b5;
+  color: white;
   font-weight: bolder;
   font-size: 40px;
   padding: 20px;
@@ -50,5 +53,7 @@ html, body {
 div {
   box-sizing: border-box;
 }
+
+
 
 </style>
