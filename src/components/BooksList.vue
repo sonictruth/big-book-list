@@ -1,16 +1,75 @@
 <template>
-  <div class="bl-main mdl-shadow--4dp">
-  <div class="bl-toolbar">TOolbar</div>
+  <div class="bl-main mdl-shadow--16dp">
+  <div class="bl-toolbar">
+    
+<h6>Search our books:</h6>
+ 
+    <select v-model="selectedGender">
+      <option value="" selected>Gender</option>
+      <option v-for="gender in genders" v-bind:value="$index">
+        {{ gender }}
+      </option>
+    </select>
+
+
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+      <input v-model="authorFilter" debounce="100" class="mdl-textfield__input" type="text" id="sample3">
+      <label class="mdl-textfield__label" for="sample3">Search Author...</label>
+    </div>
+   <br>
+    <select v-model="selectedGenre">
+      <option value="" selected>Genre</option>
+      <option v-for="genre in genres" v-bind:value="$index">
+        {{ genre }}
+      </option>
+    </select>
+
+     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+      <input v-model="titleFilter" debounce="100" class="mdl-textfield__input" type="text" id="sample3">
+      <label class="mdl-textfield__label" for="sample3">Search Title...</label>
+    </div>
+<br>
+
+
+
+
+<br>
+<button @click="applyFilters" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored">
+  <i class="material-icons">search</i>Seach
+</button>
+
+<button @click="clearFilters" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect ">
+  <i class="material-icons">clear</i>Clear
+</button>
+
+<br>
+<br>
+
+<!-- TODO: use padding no ugly br's -->
+
+
+  </div>
+  <div class="bl-header">
+      <table class="bl-table" cellspacing="0" cellpadding="0">
+        <tr class="bl-row">
+          <td @click="sortBy('title')" class="bl-table-title">Title</td>
+          <td @click="sortBy('authorName')" class="bl-table-auth">Author</td>
+          <td @click="sortBy('genre')" class="bl-table-gen">Genre</td>
+          <td @click="sortBy('publishDate')" class="bl-table-pub">Published</td>
+        </tr>
+      </table>
+  </div>
   <div v-el:container class="bl-container">
     <div v-el:holder  class="bl-holder">
       <div v-el:view  class="bl-view">
-      <div class="bl-row" v-for="book in viewBooks">
-        {{book.title}}
-        {{book.authorName}}
-        {{genders[book.authorGender]}}
-        {{genres[book.genre]}}
-        {{book.publishDate}}
-      </div>
+      <table class="bl-table" cellspacing="0" cellpadding="0">
+        <tr class="bl-row" v-for="book in viewBooks">
+          <td class="bl-table-title">{{book.title}}</td>
+          <td class="bl-table-auth">{{genders[book.authorGender]}} {{book.authorName}}</td>
+          <td class="bl-table-gen">{{genres[book.genre]}}</td>
+          <td class="bl-table-pub">{{book.publishDate | formatTimestamp}}</td>
+        </tr>
+      </table>
       </div>
     </div>
   </div>
@@ -28,15 +87,60 @@ const rowHeight = 25; // fixed row height to avoid css height overflow
 
 export default {
   methods: {
+    clearFilters() {
+      // FIXME:  kind of W.E.T. :/
+      this.titleFilter = '';
+      this.authorFilter = '';
+      this.selectedGenre = '';
+      this.selectedGender = '';
+      this.books = this.booksUnfiltered;
+      this.renderView(true);
+    },
+    applyFilters() {
+      // FIXME:  kind of W.E.T. :/
+      window.setTimeout(() => {
+        this.books = this.booksUnfiltered;
+        if (this.titleFilter) {
+          this.books = this.books.filter((book) => book.title.includes(this.titleFilter));
+        }
+        if (this.authorFilter) {
+          this.books = this.books.filter((book) => book.authorName.includes(this.authorFilter));
+        }
+        if (Number.isInteger(this.selectedGenre)) {
+          this.books = this.books.filter((book) => book.genre === this.selectedGenre);
+        }
+        if (Number.isInteger(this.selectedGender)) {
+          this.books = this.books.filter((book) => book.authorGender === this.selectedGender);
+        }
+        this.renderView(true);
+      }, 1);
+    },
+    sortBy(column) {
+      window.setTimeout(() => {
+        this.books.sort((a, b) => {
+          if (a[column] < b[column]) {
+            return -1;
+          }
+          if (a[column] > b[column]) {
+            return 1;
+          }
+          return 0;
+        });
+        this.renderView(true);
+      }, 10);
+    },
     onScrollDebounce() {
       if (this.timer) {
         clearTimeout(this.timer);
       }
-      this.timer = setTimeout(this.renderView.bind(this), 500);
+      this.timer = setTimeout(this.renderView.bind(this), 100);
     },
-    renderView() {
+    renderView(refresh = false) {
       const container = this.$els.container;
       const view = this.$els.view;
+      if (refresh) {
+        container.scrollTop = 0;
+      }
       const firstItem = Math.floor(container.scrollTop / rowHeight);
       let lastItem = firstItem + Math.ceil(container.offsetHeight / rowHeight) + 1;
       if (lastItem + 1 >= this.totalRows) {
@@ -44,12 +148,17 @@ export default {
       }
       view.style.top = `${firstItem * rowHeight}px`;
       this.viewBooks = this.books.slice(firstItem, lastItem + 3);
-      this.statusMsg = `Showing ${firstItem + 1} - ${lastItem + 1} of ${this.totalRows}`;
+      if (this.books.length === 0) {
+        this.statusMsg = 'No books :(';
+      } else {
+        this.statusMsg = `Showing ${firstItem + 1} - ${lastItem + 1} of ${this.books.length}`;
+      }
     },
     loadBooks() {
       this.statusMsg = 'Loading...';
       BooksGenerator.getBooks().then((generatedBooks) => {
         this.books = generatedBooks;
+        this.booksUnfiltered = this.books.slice(); // make copy
         this.totalRows = generatedBooks.length;
         const holderheight = rowHeight * this.totalRows;
         this.statusMsg = `Loaded ${generatedBooks.length} books`;
@@ -59,7 +168,9 @@ export default {
     },
   },
   ready() {
+    window.componentHandler.upgradeDom();
     this.books = [];
+    this.booksUnfiltered = [];
     this.totalRows = 0;
     this.$els.container.style.height = `${rowHeight * rowsPerPage}px`;
     this.$els.container.addEventListener('scroll', this.onScrollDebounce.bind(this));
@@ -67,6 +178,10 @@ export default {
   },
   data() {
     return {
+      titleFilter: '',
+      authorFilter: '',
+      selectedGenre: '',
+      selectedGender: '',
       genres,
       genders,
       statusMsg: 'Ready',
@@ -77,35 +192,74 @@ export default {
 </script>
 
 <style scoped>
+ .bl-table-title{
+  width: 25%;
+ }
+ .bl-table-auth{
+  width: 25%;
+ }
+ .bl-table-gen{
+  text-align: center;
+  width: 15%;
+ }
+ .bl-table-pub{
+  text-align: center;
+  width: 15%;
+ }
  .bl-main {
   background-color: white;
  }
  .bl-toolbar {
-    padding: 10px;
+    text-align: center;
+    padding: 5px;
+  background-image: url("../assets/asanoha-400px.png");
  }
- .material-icons, .bl-status {
+ .bl-status .material-icons {
     font-size: 10px;
  }
  .bl-status {
-    padding: 5px 10px 5px 10px;
+    padding: 5px;
  }
  .bl-row {
-   overflow: hidden;
-   height: 25px;
+  padding: 5px;
+  overflow: hidden;
+  height: 25px;
+ }
+
+ .bl-view .bl-row:nth-child(odd) {
+      background: #f4f5f6;
+  }
+  .bl-view .bl-row:nth-child(even) {
+      background: white;
+  }
+ .bl-view .bl-row:hover {
+  background-color: lightgray;
  }
  .bl-view {
     position: absolute;
     width: 100%;
     height: 100px;
-    background-color: red;
     top: 0px;
+ }
+ .bl-table{
+   margin: 5px;
+   width: 100%;
  }
  .bl-container, .bl-holder{
     width: 100%;
     position: relative;
  }
- .bl-container{
+ .bl-header td{
+   cursor: pointer;
+ }
+ .bl-header td:hover{
+   color: gray;
+ }
+ .bl-header {
     border-top: 1px solid lightgray;
+    font-weight: bolder;
+ }
+ .bl-container{
     border-bottom: 1px solid lightgray;
     overflow-x: scroll;
  }
@@ -131,6 +285,11 @@ export default {
  .bl-container::-webkit-scrollbar-track {
     background-color: #fff;
     border-radius: 8px;
+}
+select {
+  width: 80px;
+  border: 1px solid lightgray;
+  background-color: white;
 }
 
 </style>

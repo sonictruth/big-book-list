@@ -5,15 +5,15 @@
        <i class="material-icons">account_balance</i> <br>
       Big Book List</div>
       <div class="mdl-grid">
-      <div class="mdl-cell mdl-cell--3-col"></div>
-          <div class="mdl-cell mdl-cell--6-col mdl-cell--12-col-tablet">
+      <div class="mdl-cell mdl-cell--2-col"></div>
+          <div class="mdl-cell mdl-cell--8-col mdl-cell--12-col-tablet">
 
 
           <books-list></books-list>
 
 
           </div>
-       <div class="mdl-cell mdl-cell--3-col"></div>
+       <div class="mdl-cell mdl-cell--2-col"></div>
       </div>
 
   </div>
@@ -34,13 +34,15 @@ export default {
 
 <style>
 html, body {
-  font-family: 'Roboto', 'Helvetica', sans-serif;
   margin: 0;
   padding: 0;
   background-color: #fafafa;
   height: 100%;
   background-image: url("./assets/books.jpg");
   background-size: cover;
+}
+td, html, body{
+  font-family: 'Roboto', 'Helvetica', sans-serif;
 }
 
 .logo {
@@ -50,7 +52,7 @@ html, body {
   padding: 20px;
 }
 
-div {
+div, tr, td {
   box-sizing: border-box;
 }
 
