@@ -53,9 +53,10 @@
 
        </div>
       </div>
-
-
-    <div>
+    Published between:
+    <date-picker :time.sync="startDateFilter" ></date-picker>
+    <date-picker :time.sync="endDateFilter" ></date-picker>
+    <div class="bl-buttons">
 
       <button @click="applyFilters" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored">
         <i class="material-icons">search</i>Seach
@@ -103,6 +104,7 @@
 import BooksGenerator from './BooksGenerator.js';
 import genres from './genres.js';
 import genders from './genders.js';
+import myDatepicker from 'vue-datepicker';
 
 const rowsPerPage = 10;
 const rowHeight = 25; // fixed row height to avoid css height overflow
@@ -115,6 +117,8 @@ export default {
       this.authorFilter = '';
       this.selectedGenre = '';
       this.selectedGender = '';
+      this.startDateFilter = '';
+      this.endDateFilter = '';
       this.books = this.booksUnfiltered;
       this.renderView(true);
     },
@@ -133,6 +137,14 @@ export default {
         }
         if (Number.isInteger(this.selectedGender)) {
           this.books = this.books.filter((book) => book.authorGender === this.selectedGender);
+        }
+        if (this.startDateFilter) {
+          const startTimestamp = (new Date(this.startDateFilter)).getTime();
+          this.books = this.books.filter((book) => book.publishDate > startTimestamp);
+        }
+        if (this.endDateFilter) {
+          const endTimestamp = (new Date(this.endDateFilter)).getTime();
+          this.books = this.books.filter((book) => book.publishDate < endTimestamp);
         }
         this.renderView(true);
       }, 1);
@@ -162,18 +174,20 @@ export default {
       const view = this.$els.view;
       if (refresh) {
         container.scrollTop = 0;
+        const holderheight = rowHeight * this.books.length + 1;
+        this.$els.holder.style.height = `${holderheight}px`;
       }
       const firstItem = Math.floor(container.scrollTop / rowHeight);
       let lastItem = firstItem + Math.ceil(container.offsetHeight / rowHeight);
       if (lastItem + 1 >= this.totalRows) {
-        lastItem = this.totalRows - 1;
+        lastItem = this.totalRows;
       }
       view.style.top = `${firstItem * rowHeight}px`;
       this.viewBooks = this.books.slice(firstItem, lastItem + 5);
       if (this.books.length === 0) {
         this.statusMsg = 'No books :(';
       } else {
-        this.statusMsg = `Showing ${firstItem + 1} - ${lastItem + 1} of ${this.books.length}`;
+        this.statusMsg = `Showing ${firstItem + 1} - ${lastItem} of ${this.books.length}`;
       }
     },
     loadBooks() {
@@ -182,9 +196,7 @@ export default {
         this.books = generatedBooks;
         this.booksUnfiltered = this.books.slice(); // make copy
         this.totalRows = generatedBooks.length;
-        const holderheight = rowHeight * this.totalRows;
         this.statusMsg = `Loaded ${generatedBooks.length} books`;
-        this.$els.holder.style.height = `${holderheight}px`;
         this.renderView(true);
       });
     },
@@ -201,6 +213,8 @@ export default {
   data() {
     return {
       numberOfBooks: 1000,
+      startDateFilter: '',
+      endDateFilter: '',
       titleFilter: '',
       authorFilter: '',
       selectedGenre: '',
@@ -211,10 +225,16 @@ export default {
       viewBooks: [],
     };
   },
+  components: {
+    'date-picker': myDatepicker,
+  },
 };
 </script>
 
 <style scoped>
+ .bl-buttons{
+  padding-top: 10px;
+ }
  .bl-table-title{
   width: 25%;
  }
@@ -281,6 +301,7 @@ export default {
  .bl-header {
     border-top: 1px solid lightgray;
     font-weight: bolder;
+    margin-right: 11px;
  }
  .bl-container{
     border-bottom: 1px solid lightgray;
