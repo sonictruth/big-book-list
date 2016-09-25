@@ -4,7 +4,7 @@ import names from './names.js';
 import words from './words.json';
 
 export default class BooksGenerator {
-  static getBooks(numberOfBooks = 1000000) {
+  static getBooks(numberOfBooks = 1000) {
     function getRandom(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }

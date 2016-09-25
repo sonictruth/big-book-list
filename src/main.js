@@ -2,6 +2,7 @@ import Vue from 'vue';
 import App from './App';
 import 'material-design-lite/dist/material.css';
 import 'material-design-lite/dist/material.js';
+import 'animate.css';
 
 Vue.filter('formatTimestamp', (timestamp) => {
   const monthNames = [

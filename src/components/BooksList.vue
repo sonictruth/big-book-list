@@ -1,51 +1,73 @@
 <template>
   <div class="bl-main mdl-shadow--16dp">
   <div class="bl-toolbar">
+    Generate
+          <select v-model="numberOfBooks" @change="loadBooks">
+            <option value="1000">
+              1.000
+            </option>
+            <option value="10000">
+              10.000
+            </option>
+            <option value="100000">
+              100.000
+            </option>
+            <option value="1000000">
+              1.000.000
+            </option>
+          </select>
+    Books
+
+      <div class="mdl-grid">
+      <div class="mdl-cell mdl-cell--6-col mdl-cell--12-col-tablet">
+
+
+          <select v-model="selectedGender">
+            <option value="" selected>Gender</option>
+            <option v-for="gender in genders" v-bind:value="$index">
+              {{ gender }}
+            </option>
+          </select>
+
+
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input v-model="authorFilter" debounce="100" class="mdl-textfield__input" type="text" id="sample3">
+            <label class="mdl-textfield__label" for="sample3">Search Author...</label>
+          </div>
+
+
+      </div>
+       <div class="mdl-cell mdl-cell--6-col mdl-cell--12-col-tablet">
+
+          <select v-model="selectedGenre">
+            <option value="" selected>Genre</option>
+            <option v-for="genre in genres" v-bind:value="$index">
+              {{ genre }}
+            </option>
+          </select>
+
+           <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input v-model="titleFilter" debounce="100" class="mdl-textfield__input" type="text" id="sample3">
+            <label class="mdl-textfield__label" for="sample3">Search Title...</label>
+          </div>
+
+       </div>
+      </div>
+
+
+    <div>
+
+      <button @click="applyFilters" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored">
+        <i class="material-icons">search</i>Seach
+      </button>
+
+      <button @click="clearFilters" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect ">
+        <i class="material-icons">clear</i>Clear
+      </button>
     
-<h6>Search our books:</h6>
- 
-    <select v-model="selectedGender">
-      <option value="" selected>Gender</option>
-      <option v-for="gender in genders" v-bind:value="$index">
-        {{ gender }}
-      </option>
-    </select>
-
-
-    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-      <input v-model="authorFilter" debounce="100" class="mdl-textfield__input" type="text" id="sample3">
-      <label class="mdl-textfield__label" for="sample3">Search Author...</label>
     </div>
-   <br>
-    <select v-model="selectedGenre">
-      <option value="" selected>Genre</option>
-      <option v-for="genre in genres" v-bind:value="$index">
-        {{ genre }}
-      </option>
-    </select>
-
-     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-      <input v-model="titleFilter" debounce="100" class="mdl-textfield__input" type="text" id="sample3">
-      <label class="mdl-textfield__label" for="sample3">Search Title...</label>
-    </div>
-<br>
 
 
-
-
-<br>
-<button @click="applyFilters" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored">
-  <i class="material-icons">search</i>Seach
-</button>
-
-<button @click="clearFilters" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect ">
-  <i class="material-icons">clear</i>Clear
-</button>
-
-<br>
-<br>
-
-<!-- TODO: use padding no ugly br's -->
 
 
   </div>
@@ -142,12 +164,12 @@ export default {
         container.scrollTop = 0;
       }
       const firstItem = Math.floor(container.scrollTop / rowHeight);
-      let lastItem = firstItem + Math.ceil(container.offsetHeight / rowHeight) + 1;
+      let lastItem = firstItem + Math.ceil(container.offsetHeight / rowHeight);
       if (lastItem + 1 >= this.totalRows) {
         lastItem = this.totalRows - 1;
       }
       view.style.top = `${firstItem * rowHeight}px`;
-      this.viewBooks = this.books.slice(firstItem, lastItem + 3);
+      this.viewBooks = this.books.slice(firstItem, lastItem + 5);
       if (this.books.length === 0) {
         this.statusMsg = 'No books :(';
       } else {
@@ -156,14 +178,14 @@ export default {
     },
     loadBooks() {
       this.statusMsg = 'Loading...';
-      BooksGenerator.getBooks().then((generatedBooks) => {
+      BooksGenerator.getBooks(this.numberOfBooks).then((generatedBooks) => {
         this.books = generatedBooks;
         this.booksUnfiltered = this.books.slice(); // make copy
         this.totalRows = generatedBooks.length;
         const holderheight = rowHeight * this.totalRows;
         this.statusMsg = `Loaded ${generatedBooks.length} books`;
         this.$els.holder.style.height = `${holderheight}px`;
-        this.renderView();
+        this.renderView(true);
       });
     },
   },
@@ -178,6 +200,7 @@ export default {
   },
   data() {
     return {
+      numberOfBooks: 1000,
       titleFilter: '',
       authorFilter: '',
       selectedGenre: '',
