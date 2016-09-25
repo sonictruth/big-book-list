@@ -59,7 +59,7 @@
     <div class="bl-buttons">
 
       <button @click="applyFilters" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored">
-        <i class="material-icons">search</i>Seach
+        <i class="material-icons">search</i>Search
       </button>
 
       <button @click="clearFilters" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect ">
