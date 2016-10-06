@@ -38,8 +38,10 @@ export default {
 html, body {
   margin: 0;
   padding: 0;
-  background-color: #fafafa;
   height: 100%;
+}
+html {
+  background-color: #fafafa;
   background-image: url("./assets/books.jpg");
   background-size: cover;
 }

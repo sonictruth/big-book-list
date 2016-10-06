@@ -13,7 +13,7 @@ export default class BooksGenerator {
     const gendersLength = genders.length - 1;
     const wordsLength = words.length - 1;
     return new Promise((resolve) => {
-      requestAnimationFrame(() => {
+      window.requestIdleCallback(() => {
         const books = [];
         for (let i = 0; i < numberOfBooks; i++) {
           /* eslint prefer-template: 0*/
@@ -27,7 +27,7 @@ export default class BooksGenerator {
           books.push({ title, authorName, authorGender, publishDate, genre });
         }
         resolve(books);
-      }, 1);
+      });
     });
   }
 }

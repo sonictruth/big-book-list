@@ -75,10 +75,10 @@
   <div class="bl-header">
       <table class="bl-table" cellspacing="0" cellpadding="0">
         <tr class="bl-row">
-          <td @click="sortBy('title')" class="bl-table-title">Title</td>
-          <td @click="sortBy('authorName')" class="bl-table-auth">Author</td>
-          <td @click="sortBy('genre')" class="bl-table-gen">Genre</td>
-          <td @click="sortBy('publishDate')" class="bl-table-pub">Published</td>
+          <td @click="sortBy('title', getOrderDirection('title'))" class="bl-table-title">Title</td>
+          <td @click="sortBy('authorName', getOrderDirection('authorName'))" class="bl-table-auth">Author</td>
+          <td @click="sortBy('genre',  getOrderDirection('genre'))" class="bl-table-gen">Genre</td>
+          <td @click="sortBy('publishDate', getOrderDirection('publishDate'))" class="bl-table-pub">Published</td>
         </tr>
       </table>
   </div>
@@ -111,6 +111,16 @@ const rowHeight = 25; // fixed row height to avoid css height overflow
 
 export default {
   methods: {
+    getOrderDirection(column) {
+      let order = this.columnOrderDirections[column];
+      if (order === undefined || order === -1) {
+        order = 1;
+      } else {
+        order = -1;
+      }
+      this.columnOrderDirections[column] = order;
+      return order;
+    },
     clearFilters() {
       // FIXME:  kind of W.E.T. :/
       this.titleFilter = '';
@@ -124,7 +134,7 @@ export default {
     },
     applyFilters() {
       // FIXME:  kind of W.E.T. :/
-      window.setTimeout(() => {
+      window.requestIdleCallback(() => {
         this.books = this.booksUnfiltered;
         if (this.titleFilter) {
           this.books = this.books.filter((book) => book.title.includes(this.titleFilter));
@@ -147,21 +157,21 @@ export default {
           this.books = this.books.filter((book) => book.publishDate < endTimestamp);
         }
         this.renderView(true);
-      }, 1);
+      });
     },
-    sortBy(column) {
-      window.setTimeout(() => {
+    sortBy(column, direction = 1) {
+      window.requestIdleCallback(() => {
         this.books.sort((a, b) => {
           if (a[column] < b[column]) {
-            return -1;
+            return - direction;
           }
           if (a[column] > b[column]) {
-            return 1;
+            return direction;
           }
           return 0;
         });
         this.renderView(true);
-      }, 10);
+      });
     },
     onScrollDebounce() {
       if (this.timer) {
@@ -212,6 +222,7 @@ export default {
   },
   data() {
     return {
+      columnOrderDirections: {},
       numberOfBooks: 1000,
       startDateFilter: '',
       endDateFilter: '',
